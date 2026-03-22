@@ -46,10 +46,6 @@ category: CTF
 
 ![](https://pic.npiter.de/file/1771549567746_20260220090525780.png)
 
-![](assets/7.png)
-
-![](assets/8.png)
-
 很容易在根目录里面找到flag
 
 > [!IMPORTANT]
