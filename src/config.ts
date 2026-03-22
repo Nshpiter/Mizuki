@@ -265,22 +265,22 @@ export const navBarConfig: NavBarConfig = {
 			children: [
 				{
 					name: "技术",
-					url: "/category/技术/",
+					url: "/archive/?category=技术",
 					icon: "material-symbols:code",
 				},
 				{
 					name: "学习",
-					url: "/category/学习/",
+					url: "/archive/?category=学习",
 					icon: "material-symbols:school",
 				},
 				{
 					name: "CTF",
-					url: "/category/CTF/",
+					url: "/archive/?category=CTF",
 					icon: "material-symbols:security",
 				},
 				{
 					name: "生活",
-					url: "/category/生活/",
+					url: "/archive/?category=生活",
 					icon: "material-symbols:favorite",
 				},
 			],
