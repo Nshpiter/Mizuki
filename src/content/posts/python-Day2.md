@@ -4,7 +4,7 @@ published: 2025-04-09
 category: 学习
 ---
 
-> **随机图片的python代码，基`Fastapi`**
+随机图片的 Python 代码，基于 `FastAPI`。
 
 ```python
 from fastapi import FastAPI, HTTPException

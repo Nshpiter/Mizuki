@@ -26,10 +26,10 @@ category: 学习
 
 **代码总览：**
 
-```
+```python
 import pandas as pd
 
-file_path = "C:\Users\你的用户名\Desktop\你的Excel文件.xlsx"
+file_path = r"C:\Users\你的用户名\Desktop\你的Excel文件.xlsx"
 df = pd.read_excel(file_path, sheet_name="Sheet1")
 e = df.iloc[:, 2].sum()
 print(f"C 列数字之和为 {e}")

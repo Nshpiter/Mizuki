@@ -6,37 +6,30 @@ category: CTF
 
 ![](https://pic.npiter.de/file/1771550288013_20260220091804276.png)
 
-> [!IMPORTANT]
->
->
-> 本题考查burpsuite以及http的相关知识
+本题考查 BurpSuite 以及 HTTP 相关知识。
 
 ![](https://pic.npiter.de/file/1771550292509_20260220091804277.png)
 
-题目要求我们使用WLLM浏览器打开，我们使用burpsuite抓包更改
+题目要求使用 WLLM 浏览器打开，用 BurpSuite 抓包修改 `User-Agent` 即可绕过。
 
 ![](https://pic.npiter.de/file/1771550303788_20260220091804278.png)
 
-发现location处有新的地址,跟随重定向进到下一个文件
+发现 `Location` 头有新的重定向地址，跟随重定向进入下一个文件。
 
-> [!NOTE]
->
->
-> **重定向**就是当用户访问一个网址时，服务器告诉浏览器去访问另一个网址。比如，你输入一个旧的网址，但服务器会自动把你带到新的网址，这就是重定向。简单来说，就是“你本来要去A地，但有人告诉你其实应该去B地”。
+**重定向**：服务器告诉浏览器去访问另一个地址，就像本来要去 A 地，但被告知应该去 B 地。
 
-访问新的地址
+访问新地址：
 
 ![](https://pic.npiter.de/file/1771550297868_20260220091804279.png)
 
-提示我们使用本地来访问，故添加
+提示需要从本地访问，添加请求头：
 
 ```
-X-Forwarded-For:127.0.0.1
-
+X-Forwarded-For: 127.0.0.1
 ```
 
 ![](https://pic.npiter.de/file/1771550303336_20260220091804280.png)
 
-访问地址即可拿到flag
+访问即可拿到 flag：
 
-NSSCTF{51fe3534-cbaa-4dd8-9db5-017bbf9b1cbc}
+**`NSSCTF{51fe3534-cbaa-4dd8-9db5-017bbf9b1cbc}`**
