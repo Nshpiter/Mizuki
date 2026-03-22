@@ -1,49 +1,24 @@
 
-This website is built with the **Astro** framework using the [Mizuki](https://github.com/matsuzaka-yuki/mizuki) theme.
+## 关于 piter
 
-::github{repo="matsuzaka-yuki/Mizuki"}
+> 我们都是阴沟里的虫子，但总还是得有人仰望星空。
 
-## 🌟 Theme Features
+你好，我是 **piter**，一名热爱技术的学生。
 
-### 🎨 Design & User Experience
-- **Modern & Elegant Design** - Clean, minimalist interface with beautiful typography
-- **Fully Responsive** - Optimized for all devices from mobile to desktop
-- **Dark/Light Mode** - Automatic theme switching with smooth transitions
-- **Beautiful Typography** - Enhanced readability with JetBrains Mono font
-- **Smooth Animations** - Fluid page transitions and interactive elements
+喜欢折腾各种东西，对网络安全（CTF）、计算机网络、自建服务有浓厚的兴趣。这里是我记录学习过程、分享折腾心得的地方。
 
-### 🔍 Content & Search
-- **Advanced Search** - Powered by [Pagefind](https://pagefind.app/) for fast, accurate results
-- **Enhanced Markdown** - Extended syntax with code highlighting and math support
-- **Interactive Table of Contents** - Auto-scroll navigation for long articles
-- **RSS Feed Generation** - Stay updated with automatic feed generation
-- **Reading Time Estimation** - Know how long articles take to read
-- **Post Categorization** - Organize content with tags and categories
+## 兴趣方向
 
+- 🔐 **网络安全** — CTF 竞赛、Web 安全漏洞分析
+- 🌐 **计算机网络** — 协议原理、网络基础
+- 💻 **编程学习** — 各种语言和课程的探索
+- 🛠 **自建服务** — 喜欢搭建各种有趣的自托管服务
 
+## 联系我
 
-### 📱 Special Pages
-- **Anime Tracking Page** - Track your anime watching progress with ratings
-- **Friends Links Page** - Showcase friend websites with beautiful cards
-- **Diary/Moments Page** - Share life moments like social media posts
-- **Archive Page** - Organized timeline view of all posts
-- **About Page** - Customizable personal introduction (this page!)
-
-### 🛠 Technical Features
-- **Enhanced Code Blocks** - Powered by [Expressive Code](https://expressive-code.com/)
-- **Math Support** - LaTeX rendering with KaTeX for mathematical expressions
-- **Image Optimization** - PhotoSwipe gallery with lazy loading
-- **SEO Optimized** - Built-in sitemap and meta tags for better search visibility
-- **Performance Optimized** - Fast loading with caching and optimization
-- **Comment System Ready** - Integration support for Twikoo comments
-
-### 🎯 Advanced Markdown Features
-- **Callouts & Admonitions** - Beautiful info boxes with `> [!NOTE]`, `> [!TIP]`, `> [!WARNING]`
-- **Mathematical Equations** - Write LaTeX math with `$inline$` and `$$block$$` syntax
-- **GitHub Cards** - Embed repository cards with `::github{repo="user/repo"}`
-- **Syntax Highlighting** - Advanced code highlighting with line numbers
-- **Copy Code Buttons** - Easy code copying functionality
+- **GitHub**: [Nshpiter](https://github.com/Nshpiter)
+- **Linux.do**: [nshpiter](https://linux.do/u/nshpiter/summary)
 
 ---
 
-*Built with ❤️ using Astro and inspired by modern web design principles.*
+> 永远不要因为需要大量时间才能完成，就放弃梦想，时间怎么样都会过去的。
