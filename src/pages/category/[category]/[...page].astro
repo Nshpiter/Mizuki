@@ -1,0 +1,38 @@
+---
+import Pagination from "@components/control/Pagination.astro";
+import PostPage from "@components/features/posts/PostPage.astro";
+import MainGridLayout from "@layouts/MainGridLayout.astro";
+import type { GetStaticPaths } from "astro";
+
+import { PAGE_SIZE } from "../../../constants/constants";
+import { getSortedPosts } from "../../../utils/content-utils";
+
+export const getStaticPaths = (async ({ paginate }) => {
+	const allPosts = await getSortedPosts();
+
+	const categories = [
+		...new Set(
+			allPosts
+				.map((p) => p.data.category)
+				.filter((c): c is string => typeof c === "string"),
+		),
+	];
+
+	return categories.flatMap((category) => {
+		const filtered = allPosts.filter((p) => p.data.category === category);
+		return paginate(filtered, {
+			params: { category },
+			pageSize: PAGE_SIZE,
+		});
+	});
+}) satisfies GetStaticPaths;
+
+const { page } = Astro.props;
+const { category } = Astro.params;
+const len = page.data.length;
+---
+
+<MainGridLayout title={category}>
+    <PostPage page={page}></PostPage>
+    <Pagination class="mx-auto onload-animation" page={page} style={`animation-delay: calc(var(--content-delay) + ${len * 50}ms)`}></Pagination>
+</MainGridLayout>
