@@ -71,9 +71,9 @@ export const projectsData: Project[] = [
 		description:
 			"个人探索项目，\"The past holds the key to the future.\" 第一次尝试。",
 		image: "",
-		category: "other",
+		category: "web",
 		techStack: [],
-		status: "planned",
+		status: "in-progress",
 		sourceCode: "https://github.com/Nshpiter/Eridanus",
 		startDate: "2025-01-01",
 		tags: ["探索", "实验"],
