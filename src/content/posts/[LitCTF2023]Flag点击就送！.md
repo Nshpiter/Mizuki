@@ -11,8 +11,6 @@ category: CTF
 >
 > 题目一开始提示管理员才能拿到flag
 
-![](assets/2.png)
-
 有输入框，想都没想直接填写**admin**
 
 ![](https://pic.npiter.de/file/1771514320245_20260219231821840.png)
