@@ -16,6 +16,7 @@ export interface Project {
 	featured?: boolean;
 	tags?: string[];
 	visitUrl?: string; // 添加前往项目链接字段
+	stars?: number; // GitHub star 数
 }
 
 export const projectsData: Project[] = [
@@ -34,6 +35,24 @@ export const projectsData: Project[] = [
 		featured: true,
 		tags: ["bot", "llm", "qqbot"],
 		visitUrl: "https://eridanus.netlify.app",
+		stars: 200,
+	},
+	{
+		id: "npiter-blog",
+		title: "piterの小窝",
+		description:
+			"基于 Mizuki（Astro + Svelte）构建的个人博客，记录 CTF WriteUp、技术笔记和学习心得。从 WordPress 迁移而来，部署于 Vercel。",
+		image: "",
+		category: "web",
+		techStack: ["Astro", "Svelte", "TypeScript", "Tailwind CSS"],
+		status: "in-progress",
+		liveDemo: "https://npiter.de",
+		sourceCode: "https://github.com/Nshpiter/Mizuki",
+		startDate: "2025-12-05",
+		featured: true,
+		tags: ["博客", "个人网站", "CTF", "技术笔记"],
+		visitUrl: "https://npiter.de",
+		stars: 0,
 	},
 	{
 		id: "huaweipods",
@@ -49,6 +68,7 @@ export const projectsData: Project[] = [
 		startDate: "2026-07-17",
 		featured: true,
 		tags: ["Xposed", "耳机", "模块"],
+		stars: 18,
 	},
 	{
 		id: "q-music",
@@ -61,6 +81,7 @@ export const projectsData: Project[] = [
 		sourceCode: "https://github.com/Nshpiter/Q-music",
 		startDate: "2026-07-05",
 		tags: ["音乐", "播放器"],
+		stars: 5,
 	},
 	{
 		id: "image-compression-tool",
@@ -75,6 +96,7 @@ export const projectsData: Project[] = [
 		startDate: "2025-02-28",
 		tags: ["图片", "工具", "压缩"],
 		visitUrl: "https://image-compression-tool-eight.vercel.app",
+		stars: 0,
 	},
 	{
 		id: "jxufe-csg-website",
@@ -87,6 +109,7 @@ export const projectsData: Project[] = [
 		sourceCode: "https://github.com/Nshpiter/JXUFE-CSG-Website",
 		startDate: "2025-06-21",
 		tags: ["网站", "社团"],
+		stars: 0,
 	},
 	{
 		id: "vscode-gitlens",
@@ -101,6 +124,7 @@ export const projectsData: Project[] = [
 		sourceCode: "https://github.com/Nshpiter/vscode-gitlens",
 		startDate: "2026-02-12",
 		tags: ["VSCode", "Git", "插件"],
+		stars: 1,
 	},
 ];
 
