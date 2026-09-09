@@ -1,15 +1,18 @@
 <script lang="ts">
-	interface Props {
-		show: boolean;
-		class?: string;
-	}
+import type { Snippet } from "svelte";
 
-	const { show, class: className = "" }: Props = $props();
+interface Props {
+	show: boolean;
+	class?: string;
+	children?: Snippet;
+}
+
+const { show, class: className = "", children }: Props = $props();
 </script>
 
 <div class={`accordion-drawer ${className}`} class:open={show}>
 	<div class="accordion-inner">
-		<slot />
+		{@render children?.()}
 	</div>
 </div>
 

@@ -1,26 +1,18 @@
 <script lang="ts">
-	import Icon from "@iconify/svelte";
+import Icon from "@iconify/svelte";
 
-	import type { Song } from "../../music-player/types";
+import { DEFAULT_COVER_URL } from "@/components/widgets/music-player/constants";
+import { resolveAssetUrl } from "@/utils/asset-url";
+import type { Song } from "../../music-player/types";
 
-	interface Props {
-		song: Song;
-		isCurrent: boolean;
-		isPlaying: boolean;
-		onclick: () => void;
-	}
+interface Props {
+	song: Song;
+	isCurrent: boolean;
+	isPlaying: boolean;
+	onclick: () => void;
+}
 
-	const { song, isCurrent, isPlaying, onclick }: Props = $props();
-
-	function getAssetPath(path: string): string {
-		if (path.startsWith("http://") || path.startsWith("https://")) {
-			return path;
-		}
-		if (path.startsWith("/")) {
-			return path;
-		}
-		return `/${path}`;
-	}
+const { song, isCurrent, isPlaying, onclick }: Props = $props();
 </script>
 
 <div
@@ -33,13 +25,14 @@
 			onclick();
 		}
 	}}
-	role="button"
+	role="option"
 	tabindex="0"
+	aria-selected={isCurrent}
 	aria-label={`播放 ${song.title} - ${song.artist}`}
 >
 	<div class="cover-shell">
 		<img
-			src={getAssetPath(song.cover)}
+			src={resolveAssetUrl(song.cover || DEFAULT_COVER_URL)}
 			alt={song.title}
 			loading="lazy"
 			class="item-cover"
@@ -146,17 +139,6 @@
 
 	:global(.dark) .item-artist.active,
 	:global(.dark) .item-title.active {
-		color: var(--primary);
-	}
-
-	.now-playing {
-		color: var(--primary);
-		fill: currentColor;
-		font-size: 1rem;
-		flex-shrink: 0;
-	}
-
-	:global(.dark) .now-playing {
 		color: var(--primary);
 	}
 </style>

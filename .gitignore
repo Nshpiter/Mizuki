@@ -5,6 +5,7 @@ dist/
 .astro/
 demo
 plans
+
 # dependencies
 node_modules/
 
@@ -21,6 +22,12 @@ pnpm-debug.log*
 # content repository (independent mode)
 /content/
 *.backup
+
+# 本仓库为主站模式（文章直接提交），config overrides 随代码提交
+# 若将来启用内容分离模式（docs/CONTENT_SEPARATION.md），需恢复忽略 /src/config/overrides/
+
+# output of `pnpm export-config`
+/overrides-export/
 
 # Large zip files
 *.zip
@@ -52,3 +59,9 @@ src/data/bilibili-data.json
 
 # Lighthouse CI
 .lighthouseci/
+
+# Live2D editor source files
+*.psd
+*.psd~
+*.cmo3
+*.vtube.json

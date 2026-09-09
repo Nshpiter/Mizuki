@@ -4,6 +4,7 @@
  * 基于 Firefly 项目的 TOCManager 实现
  */
 
+import { JAPANESE_KATAKANA } from "../components/features/toc/utils/japanese-katakana";
 import I18nKey from "../i18n/i18nKey";
 import { i18n } from "../i18n/translation";
 
@@ -12,6 +13,7 @@ export interface TOCConfig {
 	contentElement?: HTMLElement;
 	maxLevel?: number;
 	scrollOffset?: number;
+	useJapaneseBadge?: boolean;
 }
 
 export class TOCManager {
@@ -23,12 +25,15 @@ export class TOCManager {
 	private contentId: string | null;
 	private contentElement: HTMLElement | null;
 	private scrollOffset: number;
+	private useJapaneseBadge: boolean;
+	private boundClickHandler: ((event: Event) => void) | null = null;
 
 	constructor(config: TOCConfig) {
 		this.contentId = config.contentId ?? null;
 		this.contentElement = config.contentElement ?? null;
 		this.maxLevel = config.maxLevel || 3;
 		this.scrollOffset = config.scrollOffset || 80;
+		this.useJapaneseBadge = config.useJapaneseBadge ?? false;
 	}
 
 	/**
@@ -110,6 +115,12 @@ export class TOCManager {
 
 	private generateBadgeContent(depth: number, heading1Count: number): string {
 		if (depth === this.minDepth) {
+			if (
+				this.useJapaneseBadge &&
+				heading1Count - 1 < JAPANESE_KATAKANA.length
+			) {
+				return JAPANESE_KATAKANA[heading1Count - 1];
+			}
 			return heading1Count.toString();
 		}
 		if (depth === this.minDepth + 1) {
@@ -142,20 +153,13 @@ export class TOCManager {
 		filteredHeadings.forEach((heading) => {
 			const depth = Number.parseInt(heading.tagName.charAt(1), 10);
 			const depthLevel =
-				depth === this.minDepth
-					? 0
-					: depth === this.minDepth + 1
-						? 1
-						: 2;
+				depth === this.minDepth ? 0 : depth === this.minDepth + 1 ? 1 : 2;
 
 			if (!heading.id) {
 				return;
 			}
 
-			const badgeContent = this.generateBadgeContent(
-				depth,
-				heading1Count,
-			);
+			const badgeContent = this.generateBadgeContent(depth, heading1Count);
 			if (depth === this.minDepth) {
 				heading1Count++;
 			}
@@ -169,9 +173,7 @@ export class TOCManager {
 				if (dataSubtitles) {
 					try {
 						const subtitles = JSON.parse(dataSubtitles);
-						headingText = Array.isArray(subtitles)
-							? subtitles[0]
-							: subtitles;
+						headingText = Array.isArray(subtitles) ? subtitles[0] : subtitles;
 					} catch {
 						// ignore
 					}
@@ -226,8 +228,7 @@ export class TOCManager {
 		headings.forEach((heading) => {
 			if (heading.id) {
 				const rect = heading.getBoundingClientRect();
-				const isVisible =
-					rect.top < window.innerHeight && rect.bottom > 0;
+				const isVisible = rect.top < window.innerHeight && rect.bottom > 0;
 
 				if (isVisible) {
 					visibleHeadingIds.push(heading.id);
@@ -401,12 +402,24 @@ export class TOCManager {
 	}
 
 	public bindClickEvents(): void {
+		this.unbindClickEvents();
+		this.boundClickHandler = this.handleClick.bind(this);
 		this.tocItems.forEach((item) => {
-			item.addEventListener("click", this.handleClick.bind(this));
+			item.addEventListener("click", this.boundClickHandler!);
 		});
 	}
 
+	private unbindClickEvents(): void {
+		if (this.boundClickHandler) {
+			this.tocItems.forEach((item) => {
+				item.removeEventListener("click", this.boundClickHandler!);
+			});
+			this.boundClickHandler = null;
+		}
+	}
+
 	public cleanup(): void {
+		this.unbindClickEvents();
 		if (this.observer) {
 			this.observer.disconnect();
 			this.observer = null;

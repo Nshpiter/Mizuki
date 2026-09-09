@@ -1,201 +1,216 @@
 <script lang="ts">
-	import Icon from "@iconify/svelte";
-	import { onDestroy, onMount } from "svelte";
+import Icon from "@iconify/svelte";
+import { onDestroy, onMount } from "svelte";
+import { cubicOut } from "svelte/easing";
+import { fly } from "svelte/transition";
 
-	import { musicPlayerConfig } from "@/config";
-	import type { MusicPlayerState } from "@/stores/musicPlayerStore";
-	import { musicPlayerStore } from "@/stores/musicPlayerStore";
+import { musicPlayerConfig } from "@/config";
+import type { MusicPlayerState } from "@/stores/musicPlayerStore";
+import { musicPlayerStore } from "@/stores/musicPlayerStore";
 
-	import CoverImage from "./atoms/CoverImage.svelte";
-	import MiniPlayer from "./organisms/MiniPlayer.svelte";
-	import PlayerBar from "./organisms/PlayerBar.svelte";
-	import Playlist from "./organisms/Playlist.svelte";
-	import type { RepeatMode, Song } from "./types";
+import CoverImage from "./atoms/CoverImage.svelte";
+import FabMusicPanel from "./FabMusicPanel.svelte";
+import MiniPlayer from "./organisms/MiniPlayer.svelte";
+import PlayerBar from "./organisms/PlayerBar.svelte";
+import Playlist from "./organisms/Playlist.svelte";
+import type { RepeatMode, Song } from "./types";
 
-	let state: MusicPlayerState = musicPlayerStore.getState();
-	const showFloatingPlayer = musicPlayerConfig.showFloatingPlayer;
-	let unsubscribe: (() => void) | undefined;
+let state: MusicPlayerState = musicPlayerStore.getState();
+const showFloatingPlayer = musicPlayerConfig.showFloatingPlayer;
+const floatingEntryMode = musicPlayerConfig.floatingEntryMode ?? "default";
+const useFabEntry = floatingEntryMode === "fab";
+const shouldRenderFloatingUi = showFloatingPlayer && musicPlayerConfig.enable;
+let unsubscribe: (() => void) | undefined;
 
-	function togglePlay() {
-		musicPlayerStore.toggle();
+function togglePlay() {
+	musicPlayerStore.toggle();
+}
+
+function prev() {
+	musicPlayerStore.prev();
+}
+
+function next() {
+	musicPlayerStore.next();
+}
+
+function toggleShuffle() {
+	musicPlayerStore.toggleShuffle();
+}
+
+function toggleRepeat() {
+	musicPlayerStore.toggleRepeat();
+}
+
+function playIndex(index: number) {
+	musicPlayerStore.playIndex(index);
+}
+
+function setProgress(event: MouseEvent) {
+	const progressElement = event.currentTarget as HTMLElement | null;
+	if (!progressElement) {
+		return;
+	}
+	const rect = progressElement.getBoundingClientRect();
+	const percent = (event.clientX - rect.left) / rect.width;
+	musicPlayerStore.setProgress(percent);
+}
+
+function handleProgressKeyDown(event: KeyboardEvent) {
+	if (event.key === "Enter" || event.key === " ") {
+		event.preventDefault();
+		musicPlayerStore.setProgress(0.5);
+	}
+}
+
+function toggleMute() {
+	musicPlayerStore.toggleMute();
+}
+
+function handleVolumeButtonClick() {
+	musicPlayerStore.toggleMute();
+}
+
+function startVolumeDrag(event: PointerEvent) {
+	const slider = event.currentTarget as HTMLElement | null;
+	if (!slider) {
+		return;
 	}
 
-	function prev() {
-		musicPlayerStore.prev();
-	}
-
-	function next() {
-		musicPlayerStore.next();
-	}
-
-	function toggleShuffle() {
-		musicPlayerStore.toggleShuffle();
-	}
-
-	function toggleRepeat() {
-		musicPlayerStore.toggleRepeat();
-	}
-
-	function playIndex(index: number) {
-		musicPlayerStore.playIndex(index);
-	}
-
-	function setProgress(event: MouseEvent) {
-		const progressElement = event.currentTarget as HTMLElement | null;
-		if (!progressElement) {
+	const updateVolume = (clientX: number) => {
+		const rect = slider.getBoundingClientRect();
+		if (rect.width <= 0) {
 			return;
 		}
-		const rect = progressElement.getBoundingClientRect();
-		const percent = (event.clientX - rect.left) / rect.width;
-		musicPlayerStore.setProgress(percent);
-	}
+		const percent = Math.max(
+			0,
+			Math.min(1, (clientX - rect.left) / rect.width),
+		);
+		musicPlayerStore.setVolume(percent);
+	};
 
-	function handleProgressKeyDown(event: KeyboardEvent) {
-		if (event.key === "Enter" || event.key === " ") {
-			event.preventDefault();
-			musicPlayerStore.setProgress(0.5);
-		}
-	}
+	updateVolume(event.clientX);
 
-	function toggleMute() {
-		musicPlayerStore.toggleMute();
-	}
+	const pointerId = event.pointerId;
+	slider.setPointerCapture(pointerId);
 
-	function handleVolumeButtonClick() {
-		musicPlayerStore.toggleMute();
-	}
-
-	function startVolumeDrag(event: PointerEvent) {
-		const slider = event.currentTarget as HTMLElement | null;
-		if (!slider) {
+	const handleMove = (moveEvent: PointerEvent) => {
+		if (moveEvent.pointerId !== pointerId) {
 			return;
 		}
+		updateVolume(moveEvent.clientX);
+	};
 
-		const updateVolume = (clientX: number) => {
-			const rect = slider.getBoundingClientRect();
-			if (rect.width <= 0) {
-				return;
-			}
-			const percent = Math.max(
-				0,
-				Math.min(1, (clientX - rect.left) / rect.width),
-			);
-			musicPlayerStore.setVolume(percent);
-		};
+	const cleanup = () => {
+		slider.removeEventListener("pointermove", handleMove);
+		slider.removeEventListener("pointerup", handleUp);
+		slider.removeEventListener("pointercancel", handleCancel);
+		if (slider.hasPointerCapture(pointerId)) {
+			slider.releasePointerCapture(pointerId);
+		}
+	};
 
-		updateVolume(event.clientX);
-
-		const pointerId = event.pointerId;
-		slider.setPointerCapture(pointerId);
-
-		const handleMove = (moveEvent: PointerEvent) => {
-			if (moveEvent.pointerId !== pointerId) {
-				return;
-			}
-			updateVolume(moveEvent.clientX);
-		};
-
-		const cleanup = () => {
-			slider.removeEventListener("pointermove", handleMove);
-			slider.removeEventListener("pointerup", handleUp);
-			slider.removeEventListener("pointercancel", handleCancel);
-			if (slider.hasPointerCapture(pointerId)) {
-				slider.releasePointerCapture(pointerId);
-			}
-		};
-
-		const handleUp = (upEvent: PointerEvent) => {
-			if (upEvent.pointerId !== pointerId) {
-				return;
-			}
-			updateVolume(upEvent.clientX);
-			cleanup();
-		};
-
-		const handleCancel = (cancelEvent: PointerEvent) => {
-			if (cancelEvent.pointerId !== pointerId) {
-				return;
-			}
-			cleanup();
-		};
-
-		slider.addEventListener("pointermove", handleMove);
-		slider.addEventListener("pointerup", handleUp);
-		slider.addEventListener("pointercancel", handleCancel);
-	}
-
-	function handleVolumeKeyDown(event: KeyboardEvent) {
-		if (event.key === "ArrowLeft" || event.key === "ArrowDown") {
-			event.preventDefault();
-			musicPlayerStore.setVolume(state.volume - 0.05);
+	const handleUp = (upEvent: PointerEvent) => {
+		if (upEvent.pointerId !== pointerId) {
 			return;
 		}
+		updateVolume(upEvent.clientX);
+		cleanup();
+	};
 
-		if (event.key === "ArrowRight" || event.key === "ArrowUp") {
-			event.preventDefault();
-			musicPlayerStore.setVolume(state.volume + 0.05);
+	const handleCancel = (cancelEvent: PointerEvent) => {
+		if (cancelEvent.pointerId !== pointerId) {
 			return;
 		}
+		cleanup();
+	};
 
-		if (
-			event.key === "Enter" ||
-			event.key === " " ||
-			event.key === "m" ||
-			event.key === "M"
-		) {
-			event.preventDefault();
-			toggleMute();
-		}
+	slider.addEventListener("pointermove", handleMove);
+	slider.addEventListener("pointerup", handleUp);
+	slider.addEventListener("pointercancel", handleCancel);
+}
+
+function handleVolumeKeyDown(event: KeyboardEvent) {
+	const target = event.target as HTMLElement;
+	if (
+		target?.tagName === "INPUT" ||
+		target?.tagName === "TEXTAREA" ||
+		target?.contentEditable === "true"
+	) {
+		return;
 	}
 
-	function togglePlaylist() {
-		musicPlayerStore.togglePlaylist();
+	if (event.key === "ArrowLeft" || event.key === "ArrowDown") {
+		event.preventDefault();
+		musicPlayerStore.setVolume(state.volume - 0.05);
+		return;
 	}
 
-	function toggleExpanded() {
-		musicPlayerStore.toggleExpanded();
+	if (event.key === "ArrowRight" || event.key === "ArrowUp") {
+		event.preventDefault();
+		musicPlayerStore.setVolume(state.volume + 0.05);
+		return;
 	}
 
-	function toggleHidden() {
-		musicPlayerStore.toggleHidden();
+	if (
+		event.key === "Enter" ||
+		event.key === " " ||
+		event.key === "m" ||
+		event.key === "M"
+	) {
+		event.preventDefault();
+		toggleMute();
 	}
+}
 
-	function hideError() {
-		musicPlayerStore.hideError();
-	}
+function togglePlaylist() {
+	musicPlayerStore.togglePlaylist();
+}
 
-	function volumeBarRef(node: HTMLElement) {}
+function toggleExpanded() {
+	musicPlayerStore.toggleExpanded();
+}
 
-	function canSkip(): boolean {
-		return musicPlayerStore.canSkip();
-	}
+function toggleHidden() {
+	musicPlayerStore.toggleHidden();
+}
 
-	onMount(() => {
-		unsubscribe = musicPlayerStore.subscribe((nextState) => {
-			state = nextState;
-		});
-		musicPlayerStore.initialize();
+function hideError() {
+	musicPlayerStore.hideError();
+}
+
+function volumeBarRef(_node: HTMLElement) {}
+
+function canSkip(): boolean {
+	return musicPlayerStore.canSkip();
+}
+
+onMount(() => {
+	unsubscribe = musicPlayerStore.subscribe((nextState) => {
+		state = nextState;
 	});
+	musicPlayerStore.initialize();
+});
 
-	onDestroy(() => {
-		if (unsubscribe) {
-			unsubscribe();
-		}
-		musicPlayerStore.destroy();
-	});
+onDestroy(() => {
+	if (unsubscribe) {
+		unsubscribe();
+	}
+	musicPlayerStore.destroy();
+});
 </script>
 
-<svelte:window on:keydown={handleVolumeKeyDown} />
+<svelte:window onkeydown={handleVolumeKeyDown} />
 
-{#if showFloatingPlayer && musicPlayerConfig.enable}
+{#if shouldRenderFloatingUi}
 	{#if state.showError}
-		<div class="fixed bottom-20 right-4 z-[60] max-w-sm">
+		<div class="fixed bottom-20 right-4 z-60 max-w-sm">
 			<div
 				class="bg-red-500 text-white px-4 py-3 rounded-lg shadow-lg flex items-center gap-3 animate-slide-up"
 			>
 				<Icon
 					icon="material-symbols:error"
-					class="text-xl flex-shrink-0"
+					class="text-xl shrink-0"
 				/>
 				<span class="text-sm flex-1">{state.errorMessage}</span>
 				<button
@@ -208,79 +223,124 @@
 		</div>
 	{/if}
 
-	<div
-		class="music-player fixed bottom-4 right-4 z-50 transition-all duration-300 ease-in-out"
-		class:expanded={state.isExpanded}
-		class:hidden-mode={state.isHidden}
-	>
+	{#if useFabEntry}
+		{#if state.isExpanded}
+			<div class="music-player-fab-anchor fixed z-55">
+				<div
+					class="music-player-fab-shell"
+					transition:fly={{
+						y: 16,
+						duration: 280,
+						opacity: 0.12,
+						easing: cubicOut,
+					}}
+				>
+					<FabMusicPanel />
+				</div>
+			</div>
+		{/if}
+	{:else}
 		<div
-			class="orb-player-container {state.isHidden
-				? 'orb-enter pointer-events-auto'
-				: 'orb-leave pointer-events-none'}"
+			class="music-player fixed bottom-4 right-4 z-50 transition-all duration-300 ease-in-out"
+			class:expanded={state.isExpanded}
+			class:hidden-mode={state.isHidden}
 		>
-			<CoverImage
-				cover={state.currentSong.cover}
+			<div
+				class="orb-player-container {state.isHidden
+					? 'orb-enter pointer-events-auto'
+					: 'orb-leave pointer-events-none'}"
+			>
+				<CoverImage
+					cover={state.currentSong.cover}
+					isPlaying={state.isPlaying}
+					isLoading={state.isLoading}
+					size="orb"
+					onclick={toggleHidden}
+				/>
+			</div>
+
+			<MiniPlayer
+				song={state.currentSong}
+				currentTime={state.currentTime}
+				duration={state.duration}
 				isPlaying={state.isPlaying}
 				isLoading={state.isLoading}
-				size="orb"
-				onclick={toggleHidden}
+				isHidden={state.isExpanded || state.isHidden}
+				onCoverClick={togglePlay}
+				onInfoClick={toggleExpanded}
+				onHideClick={toggleHidden}
+				onExpandClick={toggleExpanded}
+			/>
+
+			<PlayerBar
+				song={state.currentSong}
+				currentTime={state.currentTime}
+				duration={state.duration}
+				isPlaying={state.isPlaying}
+				isLoading={state.isLoading}
+				isShuffled={state.isShuffled}
+				isRepeating={state.isRepeating}
+				showPlaylist={state.showPlaylist}
+				canSkip={canSkip()}
+				volume={state.volume}
+				isMuted={state.isMuted}
+				isVolumeDragging={false}
+				isHidden={!state.isExpanded}
+				{volumeBarRef}
+				onPlayClick={togglePlay}
+				onPrevClick={prev}
+				onNextClick={() => next()}
+				onShuffleClick={toggleShuffle}
+				onRepeatClick={toggleRepeat}
+				onProgressClick={setProgress}
+				onProgressKeyDown={handleProgressKeyDown}
+				onVolumeButtonClick={handleVolumeButtonClick}
+				onSliderPointerDown={startVolumeDrag}
+				onSliderKeyDown={handleVolumeKeyDown}
+				onHideClick={toggleHidden}
+				onPlaylistClick={togglePlaylist}
+				onCollapseClick={toggleExpanded}
+			/>
+
+			<Playlist
+				playlist={state.playlist}
+				currentIndex={state.currentIndex}
+				isPlaying={state.isPlaying}
+				show={state.showPlaylist}
+				onClose={togglePlaylist}
+				onPlaySong={playIndex}
 			/>
 		</div>
-
-		<MiniPlayer
-			song={state.currentSong}
-			currentTime={state.currentTime}
-			duration={state.duration}
-			isPlaying={state.isPlaying}
-			isLoading={state.isLoading}
-			isHidden={state.isExpanded || state.isHidden}
-			onCoverClick={togglePlay}
-			onInfoClick={toggleExpanded}
-			onHideClick={toggleHidden}
-			onExpandClick={toggleExpanded}
-		/>
-
-		<PlayerBar
-			song={state.currentSong}
-			currentTime={state.currentTime}
-			duration={state.duration}
-			isPlaying={state.isPlaying}
-			isLoading={state.isLoading}
-			isShuffled={state.isShuffled}
-			isRepeating={state.isRepeating}
-			showPlaylist={state.showPlaylist}
-			canSkip={canSkip()}
-			volume={state.volume}
-			isMuted={state.isMuted}
-			isVolumeDragging={false}
-			isHidden={!state.isExpanded}
-			{volumeBarRef}
-			onPlayClick={togglePlay}
-			onPrevClick={prev}
-			onNextClick={() => next()}
-			onShuffleClick={toggleShuffle}
-			onRepeatClick={toggleRepeat}
-			onProgressClick={setProgress}
-			onProgressKeyDown={handleProgressKeyDown}
-			onVolumeButtonClick={handleVolumeButtonClick}
-			onSliderPointerDown={startVolumeDrag}
-			onSliderKeyDown={handleVolumeKeyDown}
-			onHideClick={toggleHidden}
-			onPlaylistClick={togglePlaylist}
-			onCollapseClick={toggleExpanded}
-		/>
-
-		<Playlist
-			playlist={state.playlist}
-			currentIndex={state.currentIndex}
-			isPlaying={state.isPlaying}
-			show={state.showPlaylist}
-			onClose={togglePlaylist}
-			onPlaySong={playIndex}
-		/>
-	</div>
+	{/if}
 
 	<style>
+		.music-player-fab-anchor {
+			right: var(--fab-group-right, 1.5rem);
+			bottom: calc(
+				var(--fab-group-bottom, 10rem) +
+					(
+						var(--fab-button-size, 3rem) *
+							var(--fab-visible-count, 1)
+					) +
+					(
+						var(--fab-group-gap, 0.5rem) *
+							(var(--fab-visible-count, 1) - 1)
+					)
+			);
+			width: 0;
+			height: 0;
+			pointer-events: none;
+		}
+
+		.music-player-fab-shell {
+			position: absolute;
+			right: 0;
+			bottom: 0.75rem;
+			transform-origin: bottom right;
+			pointer-events: auto;
+			will-change: transform, opacity;
+		}
+
 		.orb-player-container {
 			position: absolute;
 			bottom: 0;
@@ -416,7 +476,27 @@
 			transition: transform 0.2s ease;
 		}
 
-		@media (max-width: 768px) {
+		@media (width < 768px) {
+			.music-player-fab-anchor {
+				right: var(--fab-group-right, 0.75rem) !important;
+				bottom: calc(
+					var(--fab-group-bottom, 5rem) +
+						(
+							var(--fab-button-size, 2.75rem) *
+								var(--fab-visible-count, 1)
+						) +
+						(
+							var(--fab-group-gap, 0.5rem) *
+								(var(--fab-visible-count, 1) - 1)
+						)
+				) !important;
+			}
+
+			.music-player-fab-shell {
+				right: 0 !important;
+				bottom: 0.75rem !important;
+			}
+
 			.music-player {
 				width: 280px !important;
 				min-width: 280px !important;
@@ -455,7 +535,27 @@
 			}
 		}
 
-		@media (max-width: 480px) {
+		@media (width < 480px) {
+			.music-player-fab-anchor {
+				right: var(--fab-group-right, 0.5rem) !important;
+				bottom: calc(
+					var(--fab-group-bottom, 4.5rem) +
+						(
+							var(--fab-button-size, 2.5rem) *
+								var(--fab-visible-count, 1)
+						) +
+						(
+							var(--fab-group-gap, 0.5rem) *
+								(var(--fab-visible-count, 1) - 1)
+						)
+				) !important;
+			}
+
+			.music-player-fab-shell {
+				right: 0 !important;
+				bottom: 0.75rem !important;
+			}
+
 			.music-player {
 				width: 260px !important;
 				min-width: 260px !important;

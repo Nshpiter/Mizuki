@@ -1,41 +1,41 @@
 <script lang="ts">
-	import Icon from "@iconify/svelte";
+import Icon from "@iconify/svelte";
 
-	import NextButton from "../../music-player/atoms/NextButton.svelte";
-	import PlayButton from "../../music-player/atoms/PlayButton.svelte";
-	import PrevButton from "../../music-player/atoms/PrevButton.svelte";
+import NextButton from "../../music-player/atoms/NextButton.svelte";
+import PlayButton from "../../music-player/atoms/PlayButton.svelte";
+import PrevButton from "../../music-player/atoms/PrevButton.svelte";
 
-	interface Props {
-		isPlaying: boolean;
-		isShuffled: boolean;
-		repeatMode: number;
-		onToggleMode?: () => void;
-		onPrev: () => void;
-		onNext: () => void;
-		onTogglePlay: () => void;
-		onTogglePlaylist: () => void;
-	}
+interface Props {
+	isPlaying: boolean;
+	isShuffled: boolean;
+	repeatMode: number;
+	onToggleMode?: () => void;
+	onPrev: () => void;
+	onNext: () => void;
+	onTogglePlay: () => void;
+	onTogglePlaylist: () => void;
+}
 
-	const {
-		isPlaying,
-		isShuffled,
-		repeatMode,
-		onToggleMode,
-		onPrev,
-		onNext,
-		onTogglePlay,
-		onTogglePlaylist,
-	}: Props = $props();
+const {
+	isPlaying,
+	isShuffled,
+	repeatMode,
+	onToggleMode,
+	onPrev,
+	onNext,
+	onTogglePlay,
+	onTogglePlaylist,
+}: Props = $props();
 
-	const repeatIcon = $derived(
-		isShuffled
-			? "material-symbols:shuffle-rounded"
-			: repeatMode === 1
-				? "material-symbols:repeat-one-rounded"
-				: "material-symbols:repeat-rounded",
-	);
+const repeatIcon = $derived(
+	isShuffled
+		? "material-symbols:shuffle-rounded"
+		: repeatMode === 1
+			? "material-symbols:repeat-one-rounded"
+			: "material-symbols:repeat-rounded",
+);
 
-	const modeActive = $derived(isShuffled || repeatMode > 0);
+const modeActive = $derived(isShuffled || repeatMode > 0);
 </script>
 
 <div class="controls-row">
@@ -87,31 +87,8 @@
 		color: var(--primary);
 	}
 
-	.play-btn {
-		width: 3rem;
-		height: 3rem;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		border-radius: 9999px;
-		background: var(--btn-regular-bg);
-		color: var(--primary);
-		transition: all 200ms ease;
-		flex-shrink: 0;
-	}
-
-	.play-btn:hover {
-		background: var(--btn-regular-bg-hover);
-		transform: scale(1.03);
-	}
-
-	.play-btn:active,
 	.icon-btn:active {
 		transform: scale(0.96);
-	}
-
-	.play-icon {
-		font-size: 2rem;
 	}
 
 	.mode-btn,
@@ -123,15 +100,11 @@
 		color: var(--primary);
 	}
 
-	.nav-btn :global(svg) {
-		font-size: 2rem;
-	}
-
 	.controls-row :global(button) {
 		flex-shrink: 0;
 	}
 
-	@media (max-width: 520px) {
+	@media (width < 520px) {
 		.controls-row {
 			gap: 0.15rem;
 			padding-inline: 0;
@@ -155,10 +128,6 @@
 			width: 1.9rem;
 			height: 1.9rem;
 			flex: 0 0 1.9rem;
-		}
-
-		.nav-btn :global(svg) {
-			font-size: 1.6rem;
 		}
 	}
 </style>

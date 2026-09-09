@@ -1,6 +1,6 @@
 ---
-import BackToTop from "@components/control/BackToTop.astro";
-import { FloatingTOC, SidebarTOC } from "@components/features/toc";
+import FloatingControls from "@components/control/FloatingControls.astro";
+import { SidebarTOC } from "@components/features/toc";
 import Banner from "@components/layout/Banner.astro";
 import RightSideBar from "@components/layout/RightSideBar.astro";
 import FullscreenWallpaper from "@components/misc/FullscreenWallpaper.astro";
@@ -12,7 +12,11 @@ import type { MarkdownHeading } from "astro";
 import { Icon } from "astro-icon/components";
 
 import { fullscreenWallpaperConfig, siteConfig } from "../config";
-import { BANNER_HEIGHT } from "../constants/constants";
+import {
+	BANNER_HEIGHT,
+	BANNER_HEIGHT_FULLSCREEN,
+} from "../constants/constants";
+import { formatDateToYYYYMMDD } from "../utils/date-utils";
 import {
 	calculateGridLayout,
 	getBannerImages,
@@ -24,11 +28,6 @@ import { widgetManager } from "../utils/widget-manager";
 import Layout from "./Layout.astro";
 import GridScripts from "./partials/GridScripts.astro";
 
-// TOC模式配置
-const tocMode = siteConfig.toc.mode || "float";
-const isFloatTOC = tocMode === "float";
-const isSidebarTOC = tocMode === "sidebar";
-
 interface Props {
 	title?: string;
 	banner?: string;
@@ -37,6 +36,11 @@ interface Props {
 	setOGTypeArticle?: boolean;
 	postSlug?: string;
 	headings?: MarkdownHeading[];
+	coverImage?: string;
+	publishedDate?: Date;
+	publishedDateOnly?: boolean;
+	category?: string;
+	wordCount?: number;
 }
 
 // 获取 banner 图片
@@ -49,13 +53,19 @@ const {
 	lang,
 	setOGTypeArticle,
 	postSlug,
+	coverImage,
 	headings = [],
+	publishedDate,
+	publishedDateOnly = false,
+	category,
+	wordCount,
 } = Astro.props;
 const hasBannerCredit = siteConfig.banner.credit.enable;
 const hasBannerLink = !!siteConfig.banner.credit.url;
 
 // 检查是否为首页
 const isHomePage = Astro.url.pathname === "/" || Astro.url.pathname === "";
+const layoutVariant = postSlug ? "post" : isHomePage ? "home" : "default";
 // 手机端非首页不显示banner的CSS类
 const mobileNonHomeBannerClass = !isHomePage ? "mobile-hide-banner" : "";
 
@@ -63,6 +73,7 @@ const mobileNonHomeBannerClass = !isHomePage ? "mobile-hide-banner" : "";
 const finalMainPanelTop = getMainPanelTop(
 	siteConfig.wallpaperMode.defaultMode,
 	BANNER_HEIGHT,
+	BANNER_HEIGHT_FULLSCREEN,
 );
 
 // 计算网格布局
@@ -100,6 +111,8 @@ const defaultPostListLayout = siteConfig.postListLayout?.defaultMode || "list";
 	lang={lang}
 	setOGTypeArticle={setOGTypeArticle}
 	postSlug={postSlug}
+	coverImage={coverImage}
+	layoutVariant={layoutVariant}
 >
 	<GridScripts
 		navbarTransparentMode={siteConfig.banner?.navbar?.transparentMode ||
@@ -107,7 +120,11 @@ const defaultPostListLayout = siteConfig.postListLayout?.defaultMode || "list";
 		defaultWallpaperMode={siteConfig.wallpaperMode.defaultMode}
 		defaultPostListLayout={siteConfig.postListLayout?.defaultMode || "list"}
 		BANNER_HEIGHT={BANNER_HEIGHT}
-		pageScaling={siteConfig.pageScaling}
+		BANNER_HEIGHT_FULLSCREEN={BANNER_HEIGHT_FULLSCREEN}
+		wavesEnabled={siteConfig.banner?.waves?.enable ?? true}
+		bannerTitleEnabled={siteConfig.banner?.homeText?.enable ?? true}
+		wallpaperEnabled={fullscreenWallpaperConfig.enable ?? true}
+		postListLayoutEnabled={siteConfig.postListLayout?.enable ?? true}
 	/>
 
 	<!-- 全屏壁纸 - 始终渲染，通过 JS 控制显示隐藏 -->
@@ -120,7 +137,7 @@ const defaultPostListLayout = siteConfig.postListLayout?.defaultMode || "list";
 	<slot slot="head" name="head" />
 	<div
 		id="top-row"
-		class="z-50 pointer-events-none relative transition-all duration-700 max-w-(--page-width) px-0 md:px-4 mx-auto"
+		class="z-50 pointer-events-none relative transition-all duration-700 max-w-(--layout-page-width) px-0 md:px-4 mx-auto"
 		class:list={[""]}
 	>
 		<div
@@ -135,7 +152,8 @@ const defaultPostListLayout = siteConfig.postListLayout?.defaultMode || "list";
 	<Banner
 		bannerImages={bannerImages}
 		mobileNonHomeBannerClass={mobileNonHomeBannerClass}
-		showTextOverlay={isHomePage && (siteConfig.banner.homeText?.enable ?? false)}
+		showTextOverlay={isHomePage &&
+			(siteConfig.banner.homeText?.enable ?? false)}
 	/>
 
 	<!-- Main content -->
@@ -144,11 +162,12 @@ const defaultPostListLayout = siteConfig.postListLayout?.defaultMode || "list";
 		style={`top: ${finalMainPanelTop}`}
 	>
 		<!-- The pointer-events-none here prevent blocking the click event of the TOC -->
-		<div class="relative max-w-(--page-width) mx-auto pointer-events-auto">
+		<div class="relative max-w-(--layout-page-width) mx-auto pointer-events-auto">
 			<div
 				id="main-grid"
 				class={`transition duration-700 w-full left-0 right-0 grid ${gridCols} grid-rows-none md:grid-rows-[auto] mx-auto gap-4 px-2 md:px-4 ${!mobileShowSidebar || !hasMobileDrawerComponents ? "mobile-no-sidebar" : ""} ${hasRightSidebarComponents ? "mobile-both-sidebar" : ""}`}
 				data-layout-mode={defaultPostListLayout}
+				data-layout-variant={layoutVariant}
 			>
 				<!-- Banner image credit -->
 				{
@@ -221,8 +240,18 @@ const defaultPostListLayout = siteConfig.postListLayout?.defaultMode || "list";
 						id="content-wrapper"
 						class="onload-animation transition-leaving"
 					>
-						<!-- the overflow-hidden here prevent long text break the layout-->
-						<!-- make id different from windows.swup global property -->
+						<div
+							id="page-overlay-data"
+							data-title={title || ""}
+							data-date={publishedDate ? formatDateToYYYYMMDD(publishedDate, publishedDateOnly) : ""}
+							data-category={category || ""}
+							data-words={wordCount ? String(wordCount) : ""}
+							data-is-post={postSlug ? "true" : "false"}
+							data-is-home={isHomePage ? "true" : "false"}
+							data-wallpaper-mode={siteConfig.wallpaperMode.defaultMode}
+							class="hidden"
+						>
+						</div>
 						<slot />
 						<div
 							class="footer col-span-full onload-animation hidden lg:block"
@@ -239,8 +268,7 @@ const defaultPostListLayout = siteConfig.postListLayout?.defaultMode || "list";
 				</div>
 			</div>
 
-			<BackToTop />
-			{siteConfig.toc.enable && isFloatTOC && <FloatingTOC />}
+			<FloatingControls headings={headings} />
 		</div>
 	</div>
 
@@ -257,13 +285,13 @@ const defaultPostListLayout = siteConfig.postListLayout?.defaultMode || "list";
 
 	<!-- 侧边栏TOC模式 -->
 	{
-		siteConfig.toc.enable && isSidebarTOC && (
-			<div class="absolute w-full z-0 hidden 2xl:block">
-				<div class="relative max-w-(--page-width) mx-auto">
+		siteConfig.toc.enable && siteConfig.toc.desktopSidebar && (
+			<div class="absolute w-full z-0 hidden xl:block">
+				<div class="relative max-w-(--layout-page-width) mx-auto">
 					<div
 						id="toc-wrapper"
 						class:list={[
-							"hidden lg:block transition absolute top-0 w-(--toc-width) items-center",
+							"hidden xl:block transition absolute top-0 w-(--toc-width) items-center",
 							"-right-(--toc-width)",
 							{
 								"toc-hide":
@@ -274,11 +302,11 @@ const defaultPostListLayout = siteConfig.postListLayout?.defaultMode || "list";
 					>
 						<div
 							id="toc-inner-wrapper"
-							class="fixed top-14 w-(--toc-width) max-h-[calc(100vh-10rem)] overflow-x-hidden overflow-y-auto"
+							class="fixed top-14 w-(--toc-width) h-[calc(100vh-6rem)] max-h-[calc(100vh-6rem)] overflow-x-hidden overflow-y-auto"
 						>
 							<div
 								id="toc-container"
-								class="w-full transition-swup-fade"
+								class="w-full h-full transition-swup-fade"
 							>
 								<SidebarTOC headings={headings} />
 							</div>
@@ -291,7 +319,7 @@ const defaultPostListLayout = siteConfig.postListLayout?.defaultMode || "list";
 
 	<!-- 保留此元素以确保Swup正常工作 -->
 	{
-		(!siteConfig.toc.enable || isFloatTOC) && (
+		(!siteConfig.toc.enable || !siteConfig.toc.desktopSidebar) && (
 			<div id="toc-container" class="hidden" />
 		)
 	}

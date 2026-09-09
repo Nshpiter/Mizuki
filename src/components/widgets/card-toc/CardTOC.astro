@@ -8,6 +8,7 @@
 import "@/styles/toc.css";
 
 import type { MarkdownHeading } from "astro";
+import { siteConfig } from "@/config";
 
 import I18nKey from "../../../i18n/i18nKey";
 import { i18n } from "../../../i18n/translation";
@@ -20,6 +21,8 @@ interface Props {
 }
 
 const { class: className, style } = Astro.props;
+const useJapaneseBadge = siteConfig.toc.useJapaneseBadge;
+const tocDepth = siteConfig.toc.depth;
 ---
 
 <WidgetLayout
@@ -28,7 +31,11 @@ const { class: className, style } = Astro.props;
 	class={"group " + (className || "")}
 	style={style}
 >
-	<div data-card-toc-root>
+	<div
+		data-card-toc-root
+		data-depth={String(tocDepth)}
+		data-japanese-badge={String(useJapaneseBadge)}
+	>
 		<div class="toc-scroll-container">
 			<div class="toc-content" data-card-toc-content></div>
 		</div>
@@ -59,7 +66,7 @@ const { class: className, style } = Astro.props;
 	 * 为单个 card-toc 实例初始化目录。
 	 * 目录绑定当前组件自己的内容容器，避免左侧多断点并存时命中隐藏实例。
 	 */
-	function initCardTOC(root) {
+	function initCardTOC(root: Element) {
 		if (!(root instanceof HTMLElement)) {
 			return;
 		}
@@ -78,9 +85,16 @@ const { class: className, style } = Astro.props;
 				existingManager.cleanup();
 			}
 
+			const useJapaneseBadge = root.dataset.japaneseBadge === "true";
+			const configuredDepth = Number.parseInt(root.dataset.depth || "", 10);
+			const maxLevel = Number.isFinite(configuredDepth)
+				? configuredDepth
+				: 3;
+
 			const manager = new TOCManager({
 				contentElement: tocContent,
-				maxLevel: 3,
+				maxLevel,
+				useJapaneseBadge,
 				scrollOffset: 80,
 			});
 

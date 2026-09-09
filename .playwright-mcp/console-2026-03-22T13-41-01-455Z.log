@@ -1,0 +1,5 @@
+[    3015ms] [ERROR] Access to image at 'https://t.alcy.cc/pc?type=mobile' from origin 'https://npiter.de' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource. @ https://npiter.de/web-2-nssround20-basic%e7%bb%84%e5%90%88%e6%8b%b3%ef%bc%81-nssctfweb-2-nssround20-basic%e7%bb%84%e5%90%88%e6%8b%b3%ef%bc%81-nssctfweb-2-nssround20-basic%e7%bb%84%e5%90%88%e6%8b%b3%ef%bc%81/:0
+[    3015ms] [ERROR] Failed to load resource: net::ERR_FAILED @ https://t.alcy.cc/pc?type=mobile:0
+[    3029ms] [ERROR] Event @ https://npiter.de/wp-content/themes/Sakurairo/js/app.js?ver=3.0.10:1
+[    4524ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_CLOSED @ https://static.cloudflareinsights.com/beacon.min.js/v8c78df7c7c0f484497ecbca7046644da1771523124516:0
+[    4926ms] [WARNING] lightGallery: 0000-0000-000-0000 license key is not valid for production use @ https://npiter.de/wp-content/themes/Sakurairo/js/4252.js:0

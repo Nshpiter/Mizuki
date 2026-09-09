@@ -1,24 +1,26 @@
 <script lang="ts">
-	import Icon from "@iconify/svelte";
+import Icon from "@iconify/svelte";
+import { resolveAssetUrl } from "@/utils/asset-url";
+import { DEFAULT_COVER_URL } from "../constants";
+import type { Song } from "../types";
 
-	import type { Song } from "../types";
+interface Props {
+	song: Song;
+	index: number;
+	isCurrent: boolean;
+	isPlaying: boolean;
+	onclick: () => void;
+	lazy?: boolean;
+}
 
-	interface Props {
-		song: Song;
-		index: number;
-		isCurrent: boolean;
-		isPlaying: boolean;
-		onclick: () => void;
-	}
-
-	const { song, index, isCurrent, isPlaying, onclick }: Props = $props();
-
-	function getAssetPath(path: string): string {
-		if (path.startsWith("http://") || path.startsWith("https://"))
-			{return path;}
-		if (path.startsWith("/")) {return path;}
-		return `/${path}`;
-	}
+const {
+	song,
+	index,
+	isCurrent,
+	isPlaying,
+	onclick,
+	lazy = true,
+}: Props = $props();
 </script>
 
 <div
@@ -52,9 +54,10 @@
 		class="w-10 h-10 rounded-lg overflow-hidden bg-[var(--btn-regular-bg)] flex-shrink-0"
 	>
 		<img
-			src={getAssetPath(song.cover)}
+			src={resolveAssetUrl(song.cover || DEFAULT_COVER_URL)}
 			alt={song.title}
-			loading="lazy"
+			loading={lazy ? "lazy" : "eager"}
+			decoding="async"
 			class="w-full h-full object-cover"
 		/>
 	</div>
