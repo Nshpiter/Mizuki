@@ -4,6 +4,7 @@
   "version": "9.0",
   "scripts": {
     "sync-content": "node scripts/sync-content.js",
+    "sync-wp": "node scripts/sync-wp.mjs",
     "init-content": "node scripts/init-content-repo.js",
     "export-config": "node --experimental-transform-types scripts/export-config.mjs",
     "predev": "node scripts/sync-content.js || true",
@@ -100,7 +101,10 @@
     "glob": "^13.0.6",
     "hast-util-from-html": "2.0.3",
     "postcss-import": "^16.1.1",
-    "postcss-nesting": "^14.0.0"
+    "postcss-nesting": "^14.0.0",
+    "turndown": "^7.2.4",
+    "turndown-plugin-gfm": "^1.0.2",
+    "undici": "^8.10.2"
   },
   "packageManager": "pnpm@11.5.3"
 }
