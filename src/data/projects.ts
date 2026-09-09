@@ -38,23 +38,6 @@ export const projectsData: Project[] = [
 		stars: 200,
 	},
 	{
-		id: "npiter-blog",
-		title: "piterの小窝",
-		description:
-			"基于 Mizuki（Astro + Svelte）构建的个人博客，记录 CTF WriteUp、技术笔记和学习心得。从 WordPress 迁移而来，部署于 Vercel。",
-		image: "",
-		category: "web",
-		techStack: ["Astro", "Svelte", "TypeScript", "Tailwind CSS"],
-		status: "in-progress",
-		liveDemo: "https://npiter.de",
-		sourceCode: "https://github.com/Nshpiter/Mizuki",
-		startDate: "2025-12-05",
-		featured: true,
-		tags: ["博客", "个人网站", "CTF", "技术笔记"],
-		visitUrl: "https://npiter.de",
-		stars: 0,
-	},
-	{
 		id: "huaweipods",
 		title: "HuaweiPods",
 		description:
