@@ -19,6 +19,10 @@
 - **GitHub**: [Nshpiter](https://github.com/Nshpiter)
 - **Linux.do**: [nshpiter](https://linux.do/u/nshpiter/summary)
 
+本站基于 Mizuki 主题搭建：
+
+::github{repo="Nshpiter/Mizuki"}
+
 ---
 
 > 永远不要因为需要大量时间才能完成，就放弃梦想，时间怎么样都会过去的。
