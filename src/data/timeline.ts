@@ -94,7 +94,13 @@ export const timelineData: TimelineItem[] = [
 		type: "project",
 		startDate: "2025-12-05",
 		organization: "个人项目",
-		skills: ["Astro", "Svelte", "TypeScript", "Tailwind CSS", "Cloudflare Pages"],
+		skills: [
+			"Astro",
+			"Svelte",
+			"TypeScript",
+			"Tailwind CSS",
+			"Cloudflare Pages",
+		],
 		achievements: [
 			"成功迁移 30+ 篇文章",
 			"自定义主题样式",

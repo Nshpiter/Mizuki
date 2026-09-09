@@ -16,6 +16,7 @@ export interface Project {
 	featured?: boolean;
 	tags?: string[];
 	showImage?: boolean;
+	stars?: number;
 }
 
 export interface ProjectCardProps {

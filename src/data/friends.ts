@@ -23,7 +23,8 @@ export const friendsData: FriendItem[] = [
 	{
 		id: 2,
 		title: "慕鸢のblog",
-		imgurl: "https://www.muyuanhuck.cn/wp-content/uploads/2025/03/1743151856-4c9b4ff922eceec6cba771bc8e84257968e6bb1a1fd6b224da6c4dd35198211b.png",
+		imgurl:
+			"https://www.muyuanhuck.cn/wp-content/uploads/2025/03/1743151856-4c9b4ff922eceec6cba771bc8e84257968e6bb1a1fd6b224da6c4dd35198211b.png",
 		desc: "网安大佬",
 		siteurl: "https://www.muyuanhuck.cn",
 		tags: ["friend"],
@@ -31,7 +32,8 @@ export const friendsData: FriendItem[] = [
 	{
 		id: 3,
 		title: "spocel的小站",
-		imgurl: "https://spocel.de/wp-content/uploads/2025/04/1745776993-GbDld9-bQActQxd.jpg",
+		imgurl:
+			"https://spocel.de/wp-content/uploads/2025/04/1745776993-GbDld9-bQActQxd.jpg",
 		desc: "spocel佬~",
 		siteurl: "https://spocel.de/",
 		tags: ["friend"],
@@ -39,7 +41,8 @@ export const friendsData: FriendItem[] = [
 	{
 		id: 4,
 		title: "Recopec 的博客",
-		imgurl: "https://cdn.jsdelivr.net/gh/Recopec/Recopec.github.io@latest/images/avatar.jpg",
+		imgurl:
+			"https://cdn.jsdelivr.net/gh/Recopec/Recopec.github.io@latest/images/avatar.jpg",
 		desc: "HARDWARE, HAM, CTF, SEC, NETWORK",
 		siteurl: "https://blog.irec.moe/",
 		tags: ["friend"],
