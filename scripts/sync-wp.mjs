@@ -3,14 +3,17 @@
  * 从 WordPress REST API 拉取已发布文章，转换为 Markdown 落地到
  * src/content/posts/，并生成 Mizuki frontmatter。
  *
- * 同步策略：本地文件为准。按 WP slug 解码生成目标文件名，文件已存在则
- * 跳过（保护本地手工修正），只导入新文章；--force 时以 WP 内容覆盖本地。
+ * 增量策略（以 WP 为准）：
+ * - .wp-sync-state.json 记录每篇文章的 wpId → { modified, file }，随仓库提交，
+ *   供本地与 CI（GitHub Actions 定时同步）共用；
+ * - WP 端 modified 变化 → 以 WP 内容更新本地文件；
+ * - 首次遇到的文章若已存在同名/同标题文件（手工迁移的历史文章），
+ *   仅登记当前 modified，不覆盖内容，保护历史精修；
+ * - WP 端已删除的文章不自动删除本地文件，只提示。
  *
  * 用法：
- *   1. 在 .env 文件中配置 WP_API_BASE，例如 https://blog.example.com
- *   2. node scripts/sync-wp.mjs          # 仅导入 WP 端新增的文章
- *      node scripts/sync-wp.mjs --force  # 以 WP 内容覆盖所有本地同名文章
- *   3. 检查 diff 后 git add & commit
+ *   node scripts/sync-wp.mjs
+ * 前置：在 .env 配置 WP_API_BASE，例如 https://blog.example.com
  */
 
 import fs from "node:fs";
@@ -28,6 +31,7 @@ if (process.env.HTTPS_PROXY || process.env.HTTP_PROXY) {
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
 const POSTS_DIR = path.join(ROOT, "src/content/posts");
+const STATE_FILE = path.join(ROOT, ".wp-sync-state.json");
 
 const API_TIMEOUT_MS = 30_000;
 const PER_PAGE = 100;
@@ -101,14 +105,9 @@ function toFileName(slug, title) {
 	return `${base || "untitled"}.md`;
 }
 
-function formatYamlDate(iso) {
-	return iso.slice(0, 10);
-}
-
 /**
  * 扫描本地已有文章，建立 frontmatter title → 文件名 的索引。
- * 手工迁移的历史文章文件名与 WP slug 无对应关系，
- * 需要靠 title 比对识别"该文章已导入"，避免产生重复文件。
+ * 用于识别"标题相同但尚未登记 state"的历史文章。
  */
 function buildTitleIndex() {
 	const index = new Map();
@@ -124,6 +123,10 @@ function buildTitleIndex() {
 		if (title) index.set(title, name);
 	}
 	return index;
+}
+
+function formatYamlDate(iso) {
+	return iso.slice(0, 10);
 }
 
 /** 序列化 frontmatter；字符串统一 JSON.stringify 保证转义正确 */
@@ -191,7 +194,6 @@ function extractTerms(post) {
 async function main() {
 	loadEnv();
 
-	const force = process.argv.includes("--force");
 	const apiBase = (process.env.WP_API_BASE || "").replace(/\/+$/, "");
 	if (!apiBase) {
 		console.error("❌ 未找到 WP_API_BASE，请在 .env 文件中配置，例如：");
@@ -214,49 +216,90 @@ async function main() {
 
 	if (!fs.existsSync(POSTS_DIR)) fs.mkdirSync(POSTS_DIR, { recursive: true });
 
-	console.log(`开始同步 WordPress 文章：${apiBase}${force ? "（--force 覆盖模式）" : ""}\n`);
+	console.log(`开始同步 WordPress 文章：${apiBase}\n`);
 	const posts = await fetchAllPosts(apiBase);
 	console.log(`共获取 ${posts.length} 篇已发布文章\n`);
 
+	const state = readJsonSafe(STATE_FILE, {});
 	const titleIndex = buildTitleIndex();
 	let added = 0;
+	let updated = 0;
+	let registered = 0;
 	let skipped = 0;
+	const syncedIds = new Set();
 
 	for (const post of posts) {
+		const id = post.id;
+		const modified = post.modified;
+		syncedIds.add(id);
 		const title = decodeEntities(post.title?.rendered ?? "无标题");
-		const existingByTitle = titleIndex.get(title);
-		const fileName = existingByTitle ?? toFileName(post.slug, title);
-		const filePath = path.join(POSTS_DIR, fileName);
 
-		if (fs.existsSync(filePath) && !force) {
+		// 已登记且 WP 端无变化 → 跳过
+		if (state[id]?.modified === modified) {
 			skipped += 1;
 			continue;
 		}
 
-		const terms = extractTerms(post);
-		const markdown = turndown.turndown(post.content?.rendered ?? "").trim();
+		const knownFile = state[id]?.file;
+		// 首次登记的历史文章（标题命中已有文件）：只登记，不覆盖精修内容
+		const isHistorical = !knownFile && titleIndex.has(title);
+		const fileName = knownFile ?? (isHistorical
+			? titleIndex.get(title)
+			: toFileName(post.slug, title));
 
-		const meta = {
-			title,
-			published: post.date,
-			updated: post.modified,
-			description: stripTags(post.excerpt?.rendered ?? "").slice(0, 160),
-			image: terms.image,
-			category: decodeEntities(terms.category),
-			tags: terms.tags,
-		};
-		const content = `${buildFrontmatter(meta)}\n${markdown}\n`;
+		if (!isHistorical) {
+			const terms = extractTerms(post);
+			const markdown = turndown.turndown(post.content?.rendered ?? "").trim();
+			const meta = {
+				title,
+				published: post.date,
+				updated: post.modified,
+				description: stripTags(post.excerpt?.rendered ?? "").slice(0, 160),
+				image: terms.image,
+				category: decodeEntities(terms.category),
+				tags: terms.tags,
+			};
+			fs.writeFileSync(
+				path.join(POSTS_DIR, fileName),
+				`${buildFrontmatter(meta)}\n${markdown}\n`,
+				"utf-8",
+			);
+		}
 
-		fs.writeFileSync(filePath, content, "utf-8");
-		added += 1;
-		console.log(`  ${existingByTitle ? "✏️" : "➕"} ${title} → ${fileName}`);
+		state[id] = { modified, file: fileName };
+		if (knownFile) {
+			updated += 1;
+			console.log(`  ✏️  更新：${title}`);
+		} else if (isHistorical) {
+			registered += 1;
+			console.log(`  📌 登记（保留本地内容）：${title}`);
+		} else {
+			added += 1;
+			console.log(`  ➕ 新增：${title}`);
+		}
 	}
 
+	// 只提示、不自动删除：删除决定留给作者
+	const removedInWp = Object.keys(state).filter((id) => !syncedIds.has(Number(id)));
+	fs.writeFileSync(STATE_FILE, `${JSON.stringify(state, null, 2)}\n`, "utf-8");
+
 	console.log(
-		`\n同步完成：导入 ${added} 篇，本地已存在跳过 ${skipped} 篇。`,
+		`\n同步完成：新增 ${added}，更新 ${updated}，登记 ${registered}，未变更 ${skipped}。`,
 	);
-	if (skipped > 0 && !force) {
-		console.log("提示：如需以 WP 内容覆盖本地已有文章，请使用 --force 参数。");
+	if (removedInWp.length > 0) {
+		console.log(
+			`⚠️  以下文章在 WP 端已删除（本地文件保留，请自行处理）：${removedInWp
+				.map((id) => state[id]?.file ?? id)
+				.join("、")}`,
+		);
+	}
+}
+
+function readJsonSafe(file, fallback) {
+	try {
+		return JSON.parse(fs.readFileSync(file, "utf-8"));
+	} catch {
+		return fallback;
 	}
 }
 
