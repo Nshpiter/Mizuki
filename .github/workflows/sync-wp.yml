@@ -35,6 +35,8 @@ jobs:
 
       - name: Sync posts from WordPress
         run: node scripts/sync-wp.mjs
+        env:
+          WP_API_BASE: https://npiter.de
 
       - name: Commit and push if changed
         run: |
