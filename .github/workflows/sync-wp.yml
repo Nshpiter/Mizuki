@@ -38,14 +38,19 @@ jobs:
         env:
           WP_API_BASE: https://npiter.de
 
+      - name: Sync GitHub stars
+        run: node scripts/sync-stars.mjs
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Commit and push if changed
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           if [[ -n $(git status --porcelain) ]]; then
             git add -A
-            git commit -m "sync: 自动同步 WordPress 文章"
+            git commit -m "sync: 自动同步 WordPress 文章与 GitHub star"
             git push
           else
-            echo "WordPress 无更新，跳过提交"
+            echo "无更新，跳过提交"
           fi
