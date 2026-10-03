@@ -35,7 +35,7 @@ export const projectsData: Project[] = [
 		featured: true,
 		tags: ["bot", "llm", "qqbot"],
 		visitUrl: "https://eridanus.netlify.app",
-		stars: 205,
+		stars: 206,
 	},
 	{
 		id: "huaweipods",
