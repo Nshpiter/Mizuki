@@ -51,7 +51,7 @@ export const projectsData: Project[] = [
 		startDate: "2026-07-17",
 		featured: true,
 		tags: ["Xposed", "耳机", "模块"],
-		stars: 25,
+		stars: 26,
 	},
 	{
 		id: "q-music",
