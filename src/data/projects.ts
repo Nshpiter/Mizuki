@@ -64,7 +64,7 @@ export const projectsData: Project[] = [
 		sourceCode: "https://github.com/Nshpiter/Q-music",
 		startDate: "2026-07-05",
 		tags: ["音乐", "播放器"],
-		stars: 85,
+		stars: 95,
 	},
 	{
 		id: "image-compression-tool",
