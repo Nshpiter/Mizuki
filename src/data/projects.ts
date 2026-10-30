@@ -35,7 +35,7 @@ export const projectsData: Project[] = [
 		featured: true,
 		tags: ["bot", "llm", "qqbot"],
 		visitUrl: "https://eridanus.netlify.app",
-		stars: 209,
+		stars: 210,
 	},
 	{
 		id: "huaweipods",
@@ -64,7 +64,7 @@ export const projectsData: Project[] = [
 		sourceCode: "https://github.com/Nshpiter/Q-music",
 		startDate: "2026-07-05",
 		tags: ["音乐", "播放器"],
-		stars: 121,
+		stars: 123,
 	},
 	{
 		id: "image-compression-tool",
