@@ -51,7 +51,7 @@ export const projectsData: Project[] = [
 		startDate: "2026-07-17",
 		featured: true,
 		tags: ["Xposed", "耳机", "模块"],
-		stars: 34,
+		stars: 36,
 	},
 	{
 		id: "q-music",
@@ -64,7 +64,7 @@ export const projectsData: Project[] = [
 		sourceCode: "https://github.com/Nshpiter/Q-music",
 		startDate: "2026-07-05",
 		tags: ["音乐", "播放器"],
-		stars: 123,
+		stars: 126,
 	},
 	{
 		id: "image-compression-tool",
